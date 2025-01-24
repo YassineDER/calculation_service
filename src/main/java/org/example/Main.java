@@ -2,19 +2,22 @@ package org.example;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
-    
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
+
     public static void main(String[] args) {
-        System.out.println(calculate("1 / (45 + 3 * 2) / 12 - 1")); // Expected: -0,998
-        System.out.println(calculate("(2 + 3) * (4 / 2)"));         // Expected: 10,000
+        logger.log(Level.INFO, "1 / (45 + 3 * 2) / 12 - 1 = {0}", calculate("1 / (45 + 3 * 2) / 12 - 1")); // Expected: -0,998
+        logger.log(Level.INFO, "(2 + 3) * (4 / 2) = {0}", calculate("(2 + 3) * (4 / 2)")); // Expected: 10,000
         
         try {
-            System.out.println(calculate("10 / 0"));                    // Expected: Error: Division by zero
-            System.out.println(calculate("5 % 0"));                     // Expected: Error: Division by zero
-            System.out.println(calculate(""));                          // Expected: Error: Invalid expression
+            logger.log(Level.INFO, "10 / 0 = {0}", calculate("10 / 0"));             // Expected: Error: Invalid expression
+            logger.log(Level.INFO, "5 % 0 = {0}", calculate("5 % 0"));               // Expected: Error: Invalid expression
+            logger.log(Level.INFO, " = {0}", calculate(""));                        // Expected: Error: Invalid expression
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            logger.severe("Error: " + e.getMessage());
         }
     }
 
@@ -64,8 +67,7 @@ public class Main {
             }
 
             if (Character.isDigit(c) || c == '.') {
-                int newIndex = processNumber(expression, len, i, values);
-                i = newIndex; // Update index after processing the number
+                i = processNumber(expression, len, i, values); // Update index after processing the number
             } else if (c == '(') {
                 operators.push(c);
             } else if (c == ')') {
@@ -120,21 +122,19 @@ public class Main {
     }
 
     private static double applyOperator(char op, double b, double a) {
-        switch (op) {
-            case '+':
-                return a + b;
-            case '-':
-                return a - b;
-            case '*':
-                return a * b;
-            case '/':
+        return switch (op) {
+            case '+' -> a + b;
+            case '-' -> a - b;
+            case '*' -> a * b;
+            case '/' -> {
                 if (b == 0) throw new ArithmeticException("Division by zero");
-                return a / b;
-            case '%':
+                yield a / b;
+            }
+            case '%' -> {
                 if (b == 0) throw new ArithmeticException("Modulo by zero");
-                return a % b;
-            default:
-                throw new UnsupportedOperationException("Invalid operator");
-        }
+                yield a % b;
+            }
+            default -> throw new UnsupportedOperationException("Invalid operator");
+        };
     }
 }
